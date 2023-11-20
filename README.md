@@ -1,0 +1,2 @@
+    - sudo ./build.sh
+    - pyinstaller --windowed pyside6.py

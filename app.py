@@ -1,40 +1,44 @@
+from PySide6 import QtWidgets
+
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QApplication, QColorDialog, QSystemTrayIcon, QMenu, QFileDialog
 
-app = QApplication([])
-app.setQuitOnLastWindowClosed(False)
-
-# Create the icon
-icon = QIcon("animal-dog.png")
-
-# Create the tray
-tray = QSystemTrayIcon()
-tray.setIcon(icon)
-tray.setVisible(True)
-
-# Function to open file dialog
+import sys
+import resources  # Import the compiled resource file.
 
 
-def open_file_dialog():
-    file_name, _ = QFileDialog.getOpenFileName()
-    if file_name:
-        print("Selected file:", file_name)
-        # Handle the file as needed
+class MainWindow(QtWidgets.QMainWindow):
+
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Hello World")
+        l = QtWidgets.QLabel("My simple app.")
+        l.setMargin(10)
+        self.setCentralWidget(l)
+        self.show()
 
 
-# Create the menu
-menu = QMenu()
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    w = MainWindow()
 
-# Replace the color format actions with a file dialog action
-file_action = QAction("Open File")
-file_action.triggered.connect(open_file_dialog)
-menu.addAction(file_action)
+    # Create the icon
+    # icon = QIcon("animal-dog.png")
+    icon = QIcon(':/icons/application_icon.png')
 
-quit_action = QAction("Quit")
-quit_action.triggered.connect(app.quit)
-menu.addAction(quit_action)
+    # Create the tray
+    tray = QSystemTrayIcon()
+    tray.setIcon(icon)
+    tray.setVisible(True)
 
-# Add the menu to the tray
-tray.setContextMenu(menu)
+    menu = QMenu()
 
-app.exec()
+    quit_action = QAction("Quit")
+    quit_action.triggered.connect(app.quit)
+    menu.addAction(quit_action)
+
+    # Add the menu to the tray
+    tray.setContextMenu(menu)
+
+    app.exec()

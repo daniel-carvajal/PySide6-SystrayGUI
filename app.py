@@ -6,34 +6,42 @@ import configparser
 import resources  # Import the compiled resource file.
 from PySide6 import QtWidgets
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QFileDialog, QLineEdit
+from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QFileDialog, QLineEdit, QMessageBox
 
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    def get_settings_dir(self):
+        home_dir = Path.home()
+        settings_dir = home_dir / '.pyside6_starter'
+        settings_dir.mkdir(exist_ok=True) # Creates a directory if it doesn't already exist.
+        filename = 'settings.ini'
+        return settings_dir / filename
+    
     def __init__(self):
-        self.settings = self.load_settings()  # Load settings first
-        # print("here! ", self.settings)
-        self.config = {
-            "app_name": "Pomodoro",
-            "start": "Start Timer",
-            "pause": "Pause Timer",
-            "continue": "Continue Timer",
-            "stop": "Stop Timer",
-            "break_message": "Time is up! Take a break :)",
-            # Use settings value or default
-            "interval": self.settings.get('interval', 1500)
-        }
-        # self.interval = self.config["interval"]
-
         super().__init__()
+        self.settings = self.load_settings()  # Load settings first
+        self.config = {
+            "app_name": "PySide6-SytrayGUI",
+            "config_path": self.get_settings_dir(),
+            "api_key": "API_KEY",
+            "close_message": "Goodbye :)",
+            "debug_mode": False,
+            "interval": self.settings.get('interval', 1500) # Use settings value or default
+        }
+
+    def show_popup_message(self, title, message):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+
+        # Use the resource
+        icon_path = ":/icons/application_icon.png"
+        msg_box.setIconPixmap(QIcon(icon_path).pixmap(64, 64))
+        msg_box.exec()
 
     def show_settings_window(self):
-        self.setWindowTitle("Hello World")
-
-        l = QtWidgets.QLabel("Preferences")
-        l.setMargin(10)
-        # self.setCentralWidget(l)
+        self.setWindowTitle("Settings")
 
         self.button = QtWidgets.QPushButton("Save")
         self.button.clicked.connect(self.on_button_clicked)
@@ -58,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # [3. Create and set up QVBoxLayout]
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(l)  # Add the label to the vertical layout
+        # layout.addWidget(l)  # Add the label to the vertical layout
         # Add the horizontal layout (line edit and button) to the vertical layout
         layout.addLayout(h_layout)
 
@@ -67,9 +75,8 @@ class MainWindow(QtWidgets.QMainWindow):
         new_line_edit = QtWidgets.QLineEdit()
         new_line_edit.setReadOnly(True)
         # Replace with the actual default text
-        new_line_edit.setText("/Users/.../Music/Ableton/User Library")
+        new_line_edit.setText("/Users/.../Desktop/User Library")
         browse_button = QtWidgets.QPushButton("Browse")
-        # TODO: Connect the browse button to a method that opens a QFileDialog or similar
         browse_button.clicked.connect(self.open_file_dialog)
 
         # Create a QHBoxLayout for the label and browse button
@@ -98,6 +105,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.show()
+        self.raise_()
+        self.activateWindow()
 
     # emitted when the user hits the Enter or Return key while editing the line edit.
     def return_pressed(self):
@@ -206,7 +215,8 @@ class MainWindow(QtWidgets.QMainWindow):
         print(self.config)
 
     def on_button_clicked(self):
-        print("Button clicked!")  # Replace with the action you want to perform
+        print("Button clicked! API key updated")  # Replace with the action you want to perform
+        self.show_popup_message("Success", "Your operation was successful!")
         # self.open_file_dialog()
 
     # Function to open file dialog
@@ -217,7 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # Handle the file as needed
             self.update_and_reload_settings({'General': {'interval': 1000}})
 
-if __name__ == '__main__':
+def start():
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
 
@@ -230,11 +240,15 @@ if __name__ == '__main__':
     tray.setVisible(True)
 
     def open_settings_window():
-        w.show_settings_window()  # Show the main window
+        w.show_settings_window()
 
+    # The menu bar items list (Enable, Settings, Quit) is not considered a window. 
+    # It's a context menu associated with the system tray icon. When you click the 
+    # system tray icon, this context menu is displayed.
+    
     menu = QMenu()
 
-    mic_action = QAction("Mic On")
+    mic_action = QAction("Enable")
     menu.addAction(mic_action)
 
     settings_action = QAction("Settings")
@@ -249,3 +263,6 @@ if __name__ == '__main__':
     tray.setContextMenu(menu)
 
     app.exec()
+
+if __name__ == '__main__':
+    start();
